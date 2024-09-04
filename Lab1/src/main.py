@@ -28,13 +28,13 @@ if __name__ == '__main__':
     sns.lineplot(x=np.arange(N), y=linear_down_data)
     plt.title('Linear Downtrend')
 
-    plt.subplot(2, 2, 4)
-    sns.lineplot(x=np.arange(N), y=exponential_down_data)
-    plt.title('Exponential Downtrend')
-
     plt.subplot(2, 2, 3)
     sns.lineplot(x=np.arange(N), y=exponential_up_data)
     plt.title('Exponential Uptrend')
+
+    plt.subplot(2, 2, 4)
+    sns.lineplot(x=np.arange(N), y=exponential_down_data)
+    plt.title('Exponential Downtrend')
 
     plt.tight_layout()
     plt.show()
