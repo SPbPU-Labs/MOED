@@ -73,7 +73,6 @@ class Model:
             x = np.zeros(N)
             for i in range(N):
                 time_str = str(time.perf_counter()).encode('utf-8')
-                print(time_str)
                 hash_md5 = hashlib.md5(time_str).hexdigest()
                 hash_int = int(hash_md5, 16)
                 x[i] = hash_int / 2**128  # [0, 1]
