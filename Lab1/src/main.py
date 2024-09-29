@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -64,6 +66,7 @@ def piecewise_nonlinear_func():
     plt.title('Nonlinear func')
     line_plot.set_xlabel('t', fontsize=12)
     line_plot.set_ylabel('x(t)', fontsize=12)
+    plt.tight_layout()
     fig.savefig("./plots/fig_1_1.png")
 
 def __check_trend(i: int) -> str:
@@ -82,13 +85,14 @@ def __check_trend(i: int) -> str:
 
 if __name__ == '__main__':
     sns.set(style="whitegrid")
+    if not os.path.exists("./plots"):
+        os.makedirs("./plots")
 
     for func, i in zip([test_trend_method, test_shift_method, test_mult_method], range(1, 4)):
         fig = plt.figure(figsize=(14, 8))
         fig.suptitle(f"Page #{i}")
         func()
+        plt.tight_layout()
         fig.savefig(f"./plots/fig_{i}.png")
-
     piecewise_nonlinear_func()
-    plt.tight_layout()
     plt.show()
