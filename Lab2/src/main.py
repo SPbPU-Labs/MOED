@@ -26,11 +26,11 @@ if __name__ == '__main__':
     sns.set(style="whitegrid")
     if not os.path.exists("./plots"):
         os.makedirs("./plots")
+
+    plt.tight_layout()
     for i in range(len(N)):
         fig = plt.figure(figsize=(14, 8))
         fig.suptitle(f"Page #{i+1}")
         test_noise_methods(N[i])
         fig.savefig(f"./plots/fig_{i+1}.png")
-
-    plt.tight_layout()
     plt.show()
