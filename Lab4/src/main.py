@@ -20,14 +20,15 @@ if __name__ == '__main__':
     for noise_method in [Model.noise, Model.myNoise]:
         for i in range(3):
             data = Model.randVector(M[i], N[i], R, noise_method)
-            stat = Analysis.stationarity(data, N[i], P[i])
-            ergo = Analysis.ergodicity(data, M[i], N[i], P[i])
-            print(f"Входные параметры:{YELLOW} M = {M[i]}, N = {N[i]}, R = {R}, P = {P[i]}{RESET}")
-            if noise_method is Model.noise:
-                print(f"Метод генерации случайных данных:{BLUE} noise(){RESET}")
-            else:
-                print(f"Метод генерации случайных данных:{BLUE} myNoise(){RESET}")
-            print(f"Полученные результаты: {GREEN}Стационарность{RESET} – {stat}; {GREEN}Эргодичность{RESET} – {ergo}\n")
+            for p in P:
+                stat = Analysis.stationarity(data, N[i], p)
+                ergo = Analysis.ergodicity(data, M[i], N[i], p)
+                print(f"Входные параметры:{YELLOW} M = {M[i]}, N = {N[i]}, R = {R}, P = {p}{RESET}")
+                if noise_method is Model.noise:
+                    print(f"Метод генерации случайных данных:{BLUE} noise(){RESET}")
+                else:
+                    print(f"Метод генерации случайных данных:{BLUE} myNoise(){RESET}")
+                print(f"Полученные результаты: {GREEN}Стационарность{RESET} – {stat}; {GREEN}Эргодичность{RESET} – {ergo}\n")
 
     # i = 0
     # while i <= 10000:
