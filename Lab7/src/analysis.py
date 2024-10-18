@@ -94,3 +94,33 @@ class Analysis:
             ccf_values.append(ccf_value)
 
         return np.array(ccf_values)
+
+    @staticmethod
+    def fourier(data, N):
+        """
+        Вычисляет дискретное преобразование Фурье для сигнала data.
+        :param data: np.ndarray
+            Входной сигнал (временной ряд).
+        :param N: int
+            Длина массива входного сигнала
+
+        :return tuple: (Re, Im)
+            Кортеж из вещественной и мнимой частей.
+        """
+        Re = np.zeros(N)
+        Im = np.zeros(N)
+        for n in range(N):
+            for k in range(N):
+                angle = 2 * np.pi * n * k / N
+                Re[n] += data[k] * np.cos(angle)
+                Im[n] += data[k] * np.sin(angle)
+            Re[n] /= N
+            Im[n] /= N
+        return Re, Im
+
+    @staticmethod
+    def spectrFourier(Re, Im, N_half, dt):
+        """
+        Вычисляет амплитудный спектр Фурье для заданного сигнала.
+        """
+        return np.sqrt(Re[:N_half]**2 + Im[:N_half]**2)
