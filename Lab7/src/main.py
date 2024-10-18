@@ -85,6 +85,40 @@ def test_spectrFourier_method():
     for func in inner_funcs:
         func()
 
+def test_spectrFourier_method_mult():
+    def __test_harm_method():
+        A0 = 100
+        f = 115
+        dt = 0.001
+        data = Model.harm(N, A0, f, dt)
+        for i in range(len(L)):
+            data[N-1-L[i]:] = 0
+            Re, Im = Analysis.fourier(data, N)
+            result = Analysis.spectrFourier(Re, Im, N_half, Dt)
+            plt.subplot(2, 3, i+1)
+            make_line_plot(f'Harm; L={L[i]}', np.arange(N_half), result, 'f', '|X_n|')
+
+    def __test_polyHarm_method():
+        m = 3
+        A = [100, 15, 20]
+        f = [33, 5, 170]
+        dt = 0.002
+        data = Model.polyHarm(N, A, f, m, dt)
+        for i in range(len(L)):
+            data[N-1-L[i]:] = 0
+            Re, Im = Analysis.fourier(data, N)
+            result = Analysis.spectrFourier(Re, Im, N_half, Dt)
+            plt.subplot(2, 3, i+4)
+            make_line_plot(f'PolyHarm; L={L[i]}', np.arange(N_half), result, 'f', '|X_n|')
+        print(f'Частота полигармонического процесса: {np.max(f)}')
+
+    N = 1024
+    L = [24, 124, 224]
+    N_half = N // 2
+    Dt = 1
+    inner_funcs = [__test_harm_method, __test_polyHarm_method]
+    for func in inner_funcs:
+        func()
 
 if __name__ == '__main__':
     sns.set_theme(style="whitegrid")
@@ -93,6 +127,7 @@ if __name__ == '__main__':
 
     test_methods = {
         test_spectrFourier_method: 'Спектр Фурье',
+        test_spectrFourier_method_mult: 'Спектр Фурье (умноженный)'
     }
 
     for test_method, title in test_methods.items():
