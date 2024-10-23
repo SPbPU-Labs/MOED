@@ -128,14 +128,22 @@ class Model:
 
     @staticmethod
     def harm(N: int, A_0: float, f_0: float, dt: float) -> np.ndarray:
-        """Гармонический процесс"""
+        """
+        Гармонический процесс
+        x(t) = {x_k} = A_0 * sin(2π*f_0*Δt*k)
+        k=0,1,2,...,N-1
+        """
         k = np.arange(N)
         x = A_0 * np.sin(2 * np.pi * f_0 * dt * k)
         return x
 
     @staticmethod
     def polyHarm(N: int, A: np.ndarray, f: np.ndarray, M: int, dt: float) -> np.ndarray:
-        """Полигармонический процесс"""
+        """
+        Полигармонический процесс
+        x(t) = {x_k} = ∑(A_i*sin(2π*f_0*Δt*k))
+        k=0,1,2,...,N-1
+        """
         k = np.arange(N)
         x = np.zeros(N)
         for i in range(len(k)):
