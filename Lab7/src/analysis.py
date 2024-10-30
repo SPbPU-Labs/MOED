@@ -119,7 +119,7 @@ class Analysis:
         return Re, Im
 
     @staticmethod
-    def spectrFourier(Re, Im, N_half, dt):
+    def spectrFourier(Re, Im, N_half):
         """
         Вычисляет амплитудный спектр Фурье для заданного сигнала.
         """

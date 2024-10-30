@@ -127,15 +127,21 @@ class Model:
         return np.array(vectors)
 
     @staticmethod
-    def harm(N: int, A_0: float, f_0: float, dt: float) -> np.ndarray:
-        """Гармонический процесс"""
+    def harm(N = 1000, A_0 = 100.0, f_0 = 15, dt = 0.001) -> np.ndarray:
+        """
+        Гармонический процесс
+        x(t) = {x_k} = A_0 * sin(2π*f_0*Δt*k), k=0,1,2,...,N-1
+        """
         k = np.arange(N)
         x = A_0 * np.sin(2 * np.pi * f_0 * dt * k)
         return x
 
     @staticmethod
-    def polyHarm(N: int, A: np.ndarray, f: np.ndarray, M: int, dt: float) -> np.ndarray:
-        """Полигармонический процесс"""
+    def polyHarm(N = 100, A = [100, 15, 20], f = [33, 5, 170], M = 3, dt = 0.002) -> np.ndarray:
+        """
+        Полигармонический процесс
+        x(t) = {x_k} = ∑(A_i*sin(2π*f_0*Δt*k)), k=0,1,2,...,N-1
+        """
         k = np.arange(N)
         x = np.zeros(N)
         for i in range(len(k)):
