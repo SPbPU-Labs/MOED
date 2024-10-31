@@ -13,3 +13,27 @@ class Processing:
             if spikes[i]:
                 processed_data[i] = (data[i - 1] + data[i + 1]) / 2
         return processed_data
+
+    @staticmethod
+    def antiTrendLinear(data, N):
+        """
+        Функция удаления линейного тренда с помощью первой производной.
+        Возвращает данные с удалённым линейным трендом.
+        """
+        return np.diff(data, append=data[0])
+
+    @staticmethod
+    def antiTrendNonLinear(data, N, W):
+        """
+        Функция удаления нелинейного тренда методом скользящего среднего.
+        Возвращает данные с удалённым нелинейным трендом.
+        """
+        # Скользящее среднее для устранения тренда
+        trend = np.convolve(data, np.ones(W)/W, mode='valid')
+
+        # Для выравнивания размера массивов дополним trend до размера N
+        trend_padded = np.concatenate((trend, np.zeros(N - len(trend))))
+
+        # Убираем тренд из данных
+        detrended_data = data - trend_padded
+        return detrended_data

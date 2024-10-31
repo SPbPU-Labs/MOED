@@ -4,7 +4,7 @@ import numpy as np
 import os
 
 from processing import Processing
-from src.model import Model
+from src.model import Model, TrendFuncs
 
 
 def make_line_plot(title: str, x: np.ndarray, y: np.ndarray, x_label="Time [sec]", y_label="Amplitude"):
@@ -66,6 +66,51 @@ def test_antiSpike_method():
             fig = plt.figure(figsize=(14, 8))
             fig.suptitle(current_title)
 
+def test_antiTrendLinear_method():
+    N = 1000
+    A_0 = 100
+    a = 0.005
+    b = 10
+    dt = 0.001
+    time = np.arange(0, N*dt, dt)
+
+    data1 = TrendFuncs.linear_func(time, a, b)
+    data2 = Model.harm(N, A_0)
+    add_model = Model.addModel(data1, data2)  # linear trend + harm
+    result = Processing.antiTrendLinear(add_model, N)
+
+    plt.subplot(2, 2, 1)
+    make_line_plot('Linear trend', time, data1)
+    plt.subplot(2, 2, 2)
+    make_line_plot('Harm', time, data2)
+    plt.subplot(2, 2, 3)
+    make_line_plot('addModel', time, add_model)
+    plt.subplot(2, 2, 4)
+    make_line_plot('antiTrendLinear', time, result)
+
+def test_antiTrendNonLinear_method():
+    N = 1000
+    W = 10
+    A_0 = 100
+    a = 0.005
+    b = 10
+    dt = 0.001
+    time = np.arange(0, N*dt, dt)
+
+    data1 = TrendFuncs.exp_func(time, a, b)
+    data2 = Model.harm(N, A_0)
+    add_model = Model.addModel(data1, data2)  # linear trend + harm
+    result = Processing.antiTrendNonLinear(add_model, N, W)
+
+    plt.subplot(2, 2, 1)
+    make_line_plot('Exp. trend', time, data1)
+    plt.subplot(2, 2, 2)
+    make_line_plot('Harm', time, data2)
+    plt.subplot(2, 2, 3)
+    make_line_plot('addModel', time, add_model)
+    plt.subplot(2, 2, 4)
+    make_line_plot('antiTrendNonLinear', time, result)
+
 
 if __name__ == '__main__':
     sns.set_theme(style="whitegrid")
@@ -74,6 +119,8 @@ if __name__ == '__main__':
 
     test_methods = {
         test_antiSpike_method: 'Anti spike',
+        test_antiTrendLinear_method: 'Anti trend linear',
+        test_antiTrendNonLinear_method: 'Anti trend non linear'
     }
 
     for test_method, title in test_methods.items():
