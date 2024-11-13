@@ -26,7 +26,7 @@ def test_hist_method():
             data = Model.trend(funcs[i], a, b, delta, N)
             result = Analysis.hist(data, M)
             plt.subplot(2, 2, i*2+1)
-            make_line_plot(f'Trend: {funcs[i].__name__}', np.arange(N), data, 't', 'x(t)')
+            make_line_plot(f'Trend: {funcs[i].__name__}', np.arange(N), data, 'Time [sec]', 'x(t)')
             plt.subplot(2, 2, i*2+2)
             make_line_plot(f'Histogram: {funcs[i].__name__}', np.arange(M), result, 'M', 'h')
 
@@ -48,17 +48,19 @@ def test_hist_method():
         m = 3
         A = [100, 15, 20]
         F = [33, 5, 170]
+
+        time = np.arange(0, N*dt, dt)
         data = Model.harm(N, A0, f, dt)
         result = Analysis.hist(data, M)
         plt.subplot(2, 2, 1)
-        make_line_plot('Harm', np.arange(N), data, 'k', 'x_k')
+        make_line_plot('Harm', time, data, 'Time [sec]', 'Amplitude')
         plt.subplot(2, 2, 2)
         make_line_plot('Histogram', np.arange(M), result, 'M', 'h')
 
         data = Model.polyHarm(N, A, F, m, dt)
         result = Analysis.hist(data, M)
         plt.subplot(2, 2, 3)
-        make_line_plot('PolyHarm', np.arange(N), data, 'k', 'x_k')
+        make_line_plot('PolyHarm', time, data, 'Time [sec]', 'Amplitude')
         plt.subplot(2, 2, 4)
         make_line_plot('Histogram', np.arange(M), result, 'M', 'h')
         print(f'Граничная частота полигармонического процесса: {np.max(F)}')
@@ -94,6 +96,8 @@ def test_acf_method():
     A0 = 100
     F0 = 15
     dt = 0.001
+    time = np.arange(0, N*dt, dt)
+
     j = 1
     for t in acf_types:
         i = 0
@@ -106,7 +110,7 @@ def test_acf_method():
 
             plt.subplot(3, 2, i*2+1)
             plot_name = f'Data type: {name}'
-            make_line_plot(plot_name, np.arange(N), data, 'k', 'x_k')
+            make_line_plot(plot_name, time, data, 'Time [sec]', 'Amplitude')
             plt.subplot(3, 2, i*2+2)
             plot_name = f'Func type: {t.name}'
             make_line_plot(plot_name, np.arange(N), result, 'L', 'R(L)')
@@ -130,6 +134,8 @@ def test_ccf_method():
     f0 = 15
     f1 = 30
     dt = 0.001
+    time = np.arange(0, N*dt, dt)
+
     j = 1
     for t in ccf_types:
         i = 0
@@ -151,11 +157,11 @@ def test_ccf_method():
 
             plt.subplot(4, 3, i*3+1)
             plotX_name = f'Realiz_X: {r.__name__}'
-            make_line_plot(plotX_name, np.arange(N), dataX, 'k', 'x_k')
+            make_line_plot(plotX_name, time, dataX, 'Time [sec]', 'Amplitude')
 
             plt.subplot(4, 3, i*3+2)
             plotY_name = f'Realiz_Y: {r.__name__}'
-            make_line_plot(plotY_name, np.arange(N), dataY, 'k', 'x_k')
+            make_line_plot(plotY_name, time, dataY, 'Time [sec]', 'Amplitude')
 
             plt.subplot(4, 3, i*3+3)
             make_line_plot(plot_name, np.arange(N), result, 'L', 'R(L)')

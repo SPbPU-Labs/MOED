@@ -183,4 +183,4 @@ class TrendFuncs:
         :param b: Параметр b для функции тренда.
         :return: Массив точек экспоненциальной функции
         """
-        return np.exp(a * t) * b
+        return np.exp(-a * t) + b

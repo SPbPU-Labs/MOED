@@ -68,14 +68,15 @@ def test_antiSpike_method():
 
 def test_antiTrendLinear_method():
     N = 1000
-    A_0 = 100
-    a = 0.005
-    b = 10
-    dt = 0.001
+    A_0 = 5
+    f = 50
+    a = 0.3
+    b = 20
+    dt = 0.002
     time = np.arange(0, N*dt, dt)
 
     data1 = TrendFuncs.linear_func(time, a, b)
-    data2 = Model.harm(N, A_0)
+    data2 = Model.harm(N, A_0, f, dt)
     add_model = Model.addModel(data1, data2)  # linear trend + harm
     result = Processing.antiTrendLinear(add_model, N)
 
@@ -91,25 +92,25 @@ def test_antiTrendLinear_method():
 def test_antiTrendNonLinear_method():
     N = 1000
     W = 10
-    A_0 = 100
+    R = 100
     a = 0.005
     b = 10
-    dt = 0.001
-    time = np.arange(0, N*dt, dt)
+    dt = 0.5
 
+    time = np.arange(0, N*dt, dt)
     data1 = TrendFuncs.exp_func(time, a, b)
-    data2 = Model.harm(N, A_0)
+    data2 = Model.noise(N, R)
     add_model = Model.addModel(data1, data2)  # linear trend + harm
-    result = Processing.antiTrendNonLinear(add_model, N, W)
+    # result = Processing.antiTrendNonLinear(add_model, N, W)
 
     plt.subplot(2, 2, 1)
     make_line_plot('Exp. trend', time, data1)
     plt.subplot(2, 2, 2)
-    make_line_plot('Harm', time, data2)
+    make_line_plot('Noise', time, data2)
     plt.subplot(2, 2, 3)
     make_line_plot('addModel', time, add_model)
     plt.subplot(2, 2, 4)
-    make_line_plot('antiTrendNonLinear', time, result)
+    make_line_plot('antiTrendNonLinear', time, data2)
 
 
 if __name__ == '__main__':
@@ -118,8 +119,8 @@ if __name__ == '__main__':
         os.makedirs("./plots")
 
     test_methods = {
-        test_antiSpike_method: 'Anti spike',
-        test_antiTrendLinear_method: 'Anti trend linear',
+        # test_antiSpike_method: 'Anti spike',
+        # test_antiTrendLinear_method: 'Anti trend linear',
         test_antiTrendNonLinear_method: 'Anti trend non linear'
     }
 

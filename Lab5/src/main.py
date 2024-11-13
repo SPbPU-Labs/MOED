@@ -36,7 +36,7 @@ def test_polyHarm_method():
     print(f'Частота полигармонического процесса: {np.max(f)}')
 
 def test_addModel_method():
-    a = [0.3, 0.05]
+    a = [0.3, -0.05]
     b = [20, 10]
     R = 10
     A = 5
@@ -55,6 +55,8 @@ def test_addModel_method():
     plt.subplot(2, 3, 3)
     make_line_plot('Harm', time, data2)
 
+    dt = 0.05
+    time = np.arange(0, N*dt, dt)
     data1 = TrendFuncs.exp_func(time, a[1], b[1])
     data2 = Model.noise(N, R)
     result = Model.addModel(data1, data2)  # exp trend + noise
@@ -66,7 +68,7 @@ def test_addModel_method():
     make_line_plot('Noise', time, data2)
 
 def test_multModel_method():
-    a = [0.3, 0.05]
+    a = [0.3, -0.05]
     b = [20, 10]
     R = 10
     A = 5
@@ -79,17 +81,19 @@ def test_multModel_method():
     data2 = Model.harm(N, A, f, dt)
     result = Model.multModel(data1, data2)  # linear trend + harm
     plt.subplot(2, 3, 1)
-    make_line_plot('Linear trend + Harm', time, result)
+    make_line_plot('Linear trend x Harm', time, result)
     plt.subplot(2, 3, 2)
     make_line_plot('Linear trend', time, data1)
     plt.subplot(2, 3, 3)
     make_line_plot('Harm', time, data2)
 
+    dt = 0.05
+    time = np.arange(0, N*dt, dt)
     data1 = TrendFuncs.exp_func(time, a[1], b[1])
     data2 = Model.noise(N, R)
     result = Model.multModel(data1, data2)  # exp trend + noise
     plt.subplot(2, 3, 4)
-    make_line_plot('Exp trend + Noise', time, result)
+    make_line_plot('Exp trend x Noise', time, result)
     plt.subplot(2, 3, 5)
     make_line_plot('Exp trend', time, data1)
     plt.subplot(2, 3, 6)
