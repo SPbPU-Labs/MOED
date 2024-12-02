@@ -46,17 +46,15 @@ class Processing:
         return proc_data
 
     @staticmethod
-    def antiNoise(data, M):
-        if M == 1:
-            return data
-
-        std_devs = []
-        for m in range(M):
-            # Поэлементное осреднение
-            avg_noise = np.mean(data[:m, :], axis=0)
-            # Стандартное отклонение осреднённого шума
-            std_devs.append(np.std(avg_noise))
-        return std_devs
+    def antiNoise(data, M, N):
+        result = []
+        for i in range(N):
+            avg = 0
+            for j in range(M):
+                avg = avg + data[j][i]
+            avg = avg / M
+            result.append(avg)
+        return result
 
     @staticmethod
     def lpf(fc, m, dt):
@@ -66,42 +64,42 @@ class Processing:
         lpw[0] = fact
         arg = fact * np.pi
 
-        for i in range(1, m + 1):
+        for i in range (1, m + 1):
             lpw[i] = np.sin(arg * i) / (np.pi * i)
-        lpw[m] /= 2.0
+        lpw[m] /= 2
 
         sumg = lpw[0]
-        for i in range(1, m + 1):
+        for i in range (1, m + 1):
             sum_ = d[0]
             arg = np.pi * i / m
-            for k in range(1, 4):
-                sum_ += 2 * d[k] * np.cos(arg * k)
+            for j in range (1, 4):
+                sum_ += 2 * d[j] * np.cos(arg * j)
             lpw[i] *= sum_
             sumg += 2 * lpw[i]
 
         lpw /= sumg
 
         # Симметризация весов
-        lpw_full = np.concatenate((lpw[::-1][1:], lpw))
+        lpwm2 = np.concatenate((lpw[::-1], lpw[1:]))
 
-        return lpw_full
+        return lpw, lpwm2
 
     @staticmethod
     def hpf(fc, m, dt):
-        lpw = Processing.lpf(fc, m, dt)
-        hpw = np.array([1 - lpw[m] if k == m else -lpw[k] for k in range(2 * m + 1)])
+        lpw, lpw2 = Processing.lpf(fc, m, dt)
+        hpw = np.array([1 - lpw2[m] if k == m else -lpw2[k] for k in range(len(lpw2))])
         return hpw
 
     @staticmethod
     def bpf(fc1, fc2, m, dt):
-        lpw1 = Processing.lpf(fc1, m, dt)
-        lpw2 = Processing.lpf(fc2, m, dt)
-        bpw = lpw2 - lpw1
+        lpw1, lpw1_2 = Processing.lpf(fc1, m, dt)
+        lpw2, lpw2_2 = Processing.lpf(fc2, m, dt)
+        bpw = lpw2_2 - lpw1_2
         return bpw
 
     @staticmethod
     def bsf(fc1, fc2, m, dt):
-        lpw1 = Processing.lpf(fc1, m, dt)
-        lpw2 = Processing.lpf(fc2, m, dt)
-        bsw = np.array([1 + lpw1[m] - lpw2[m] if k == m else lpw1[k] - lpw2[k] for k in range(2 * m + 1)])
+        lpw1, lpw1_2 = Processing.lpf(fc1, m, dt)
+        lpw2, lpw2_2 = Processing.lpf(fc2, m, dt)
+        bsw = np.array([1 + lpw1_2[m] - lpw2_2[m] if k == m else lpw1_2[k] - lpw2_2[k] for k in range(len(lpw1_2))])
         return bsw

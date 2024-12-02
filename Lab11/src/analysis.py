@@ -195,7 +195,7 @@ class Analysis:
 
         switch_case = {
             StatType.MIN: lambda: __min(),
-            StatType.MIN: lambda: __max(),
+            StatType.MAX: lambda: __max(),
             StatType.MEAN: lambda: __mean(),
             StatType.VARIANCE: lambda: __variance(),
             StatType.SKEW: lambda: __skewness(),

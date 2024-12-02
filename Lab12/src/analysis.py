@@ -221,8 +221,8 @@ class Analysis:
         return 20 * np.log10(sigma_signal / sigma_noise)
 
     @staticmethod
-    def transferFunction(data, m):
+    def transferFunction(data):
         N = len(data)
         Re, Im = Analysis.fourier(data, N)
         spectrum = Analysis.spectrFourier(Re, Im, N//2)
-        return spectrum * (2*m+1)
+        return spectrum * N

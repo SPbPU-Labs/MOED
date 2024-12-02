@@ -1,13 +1,11 @@
-from typing import Callable
+import os
 
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
-import os
+import seaborn as sns
 
 from processing import Processing
 from src.analysis import Analysis
-from src.model import Model, TrendFuncs
 
 
 def make_line_plot(title: str, x: np.ndarray, y: np.ndarray, x_label="Time [sec]", y_label="Amplitude"):
@@ -18,52 +16,69 @@ def make_line_plot(title: str, x: np.ndarray, y: np.ndarray, x_label="Time [sec]
     return plt
 
 
+def test_lpf_filter_method():
+    fc = 50
+    dt = 0.002
+    m = 64
+    lpf, lpf2 = Processing.lpf(fc, m, dt)
+
+    plt.subplot(1, 2, 1)
+    make_line_plot('lpf для m+1 весов', range(m+1),
+                   lpf, 'Time [index]', 'Amplitude')
+    plt.subplot(1, 2, 2)
+    make_line_plot('lpf для 2m+1 весов', range(2*m+1),
+                   lpf2, 'Time [index]', 'Amplitude')
+
 def test_filters_methods():
     global fig
 
     def __lpf():
-        lpf = Processing.lpf(fc, m, dt)
-        tf_lpf = Analysis.transferFunction(lpf, m)
+        lpf, lpf2 = Processing.lpf(fc, m, dt)
+        tf_lpf = Analysis.transferFunction(lpf2)
+
         plt.subplot(1, 2, 1)
-        make_line_plot('Импульсная реакция фильтра lpf', np.arange(len(lpf)) * dt,
-                       lpf, 'Time [sec]', 'Amplitude')
+        make_line_plot('Импульсная реакция фильтра lpf', range(2*m+1),
+                       lpf2, 'Time [index]', 'Amplitude')
         plt.subplot(1, 2, 2)
-        make_line_plot('Частотная характеристика фильтра lpf', np.arange(len(tf_lpf)) * dt,
-                       tf_lpf, 'Time [sec]', 'Amplitude')
+        make_line_plot('Частотная характеристика фильтра lpf', np.arange(0, f_bound, deltaF),
+                       tf_lpf, 'Freq [Hz]', 'Amplitude')
 
     def __hpf():
         hpf = Processing.hpf(fc, m, dt)
-        tf_hpf = Analysis.transferFunction(hpf, m)
+        tf_hpf = Analysis.transferFunction(hpf)
         plt.subplot(1, 2, 1)
-        make_line_plot('Импульсная реакция фильтра hpf', np.arange(len(hpf)) * dt,
+        make_line_plot('Импульсная реакция фильтра hpf', range(2*m+1),
                        hpf, 'Time [sec]', 'Amplitude')
         plt.subplot(1, 2, 2)
-        make_line_plot('Частотная характеристика фильтра hpf', np.arange(len(tf_hpf)) * dt,
-                       tf_hpf, 'Time [sec]', 'Amplitude')
+        make_line_plot('Частотная характеристика фильтра hpf', np.arange(0, f_bound, deltaF),
+                       tf_hpf, 'Freq [Hz]', 'Amplitude')
 
     def __bpf():
-        bpf = Processing.lpf(fc, m, dt)
-        tf_bpf = Analysis.transferFunction(bpf, m)
+        bpf = Processing.bpf(fc1, fc2, m, dt)
+        tf_bpf = Analysis.transferFunction(bpf)
         plt.subplot(1, 2, 1)
-        make_line_plot('Импульсная реакция фильтра bpf', np.arange(len(bpf)) * dt,
+        make_line_plot('Импульсная реакция фильтра bpf', range(2*m+1),
                        bpf, 'Time [sec]', 'Amplitude')
         plt.subplot(1, 2, 2)
-        make_line_plot('Частотная характеристика фильтра bpf', np.arange(len(tf_bpf)) * dt,
-                       tf_bpf, 'Time [sec]', 'Amplitude')
+        make_line_plot('Частотная характеристика фильтра bpf', np.arange(0, f_bound, deltaF),
+                       tf_bpf, 'Freq [Hz]', 'Amplitude')
 
     def __bsf():
-        bsf = Processing.lpf(fc, m, dt)
-        tf_bsf = Analysis.transferFunction(bsf, m)
+        bsf = Processing.bsf(fc1, fc2, m, dt)
+        tf_bsf = Analysis.transferFunction(bsf)
         plt.subplot(1, 2, 1)
-        make_line_plot('Импульсная реакция фильтра bsf', np.arange(len(bsf)) * dt,
+        make_line_plot('Импульсная реакция фильтра bsf', range(2*m+1),
                        bsf, 'Time [sec]', 'Amplitude')
         plt.subplot(1, 2, 2)
-        make_line_plot('Частотная характеристика фильтра bsf', np.arange(len(tf_bsf)) * dt,
-                       tf_bsf, 'Time [sec]', 'Amplitude')
+        make_line_plot('Частотная характеристика фильтра bsf', np.arange(0, f_bound, deltaF),
+                       tf_bsf, 'Freq [Hz]', 'Amplitude')
 
     fc, fc1, fc2 = 50, 35, 75
     dt = 0.002
     m = 64
+    N = 2 * m
+    f_bound = 1 / (2 * dt)
+    deltaF = 2 * f_bound / N
     inner_funcs = [__lpf, __hpf, __bpf, __bsf]
     for i in range(len(inner_funcs)):
         inner_funcs[i]()
@@ -81,6 +96,7 @@ if __name__ == '__main__':
         os.makedirs("./plots")
 
     test_methods = {
+        test_lpf_filter_method: 'Lpf filter method',
         test_filters_methods: 'Filters methods'
     }
 

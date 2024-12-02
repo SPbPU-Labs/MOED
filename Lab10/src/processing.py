@@ -1,5 +1,5 @@
 import numpy as np
-from model import Model
+
 
 class Processing:
     @staticmethod
@@ -46,14 +46,12 @@ class Processing:
         return proc_data
 
     @staticmethod
-    def antiNoise(data, M):
-        if M == 1:
-            return data
-
-        std_devs = []
-        for m in range(M):
-            # Поэлементное осреднение
-            avg_noise = np.mean(data[:m, :], axis=0)
-            # Стандартное отклонение осреднённого шума
-            std_devs.append(np.std(avg_noise))
-        return std_devs
+    def antiNoise(data, M, N):
+        result = []
+        for i in range(N):
+            avg = 0
+            for j in range(M):
+                avg = avg + data[j][i]
+            avg = avg / M
+            result.append(avg)
+        return result

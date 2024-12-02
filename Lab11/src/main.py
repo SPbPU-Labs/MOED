@@ -1,11 +1,10 @@
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
 import os
 
-from processing import Processing
-from src.analysis import Analysis
-from src.model import Model, TrendFuncs
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+
+from src.model import Model
 
 
 def make_line_plot(title: str, x: np.ndarray, y: np.ndarray, x_label="Time [sec]", y_label="Amplitude"):
@@ -56,7 +55,7 @@ if __name__ == '__main__':
         os.makedirs("./plots")
 
     test_methods = {
-        test_heartRate_method: 'HeartRate method',
+        # test_heartRate_method: 'HeartRate method',
         test_badHeartRate_method: 'BadHeartRate method',
     }
 
