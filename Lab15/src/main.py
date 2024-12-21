@@ -78,10 +78,6 @@ def plot_recorded_word_syllables():
     deltaF = (1/dt)/short_N
     Re, Im = Analysis.fourier(short_audio_data, short_N)
     result = Analysis.spectrFourier(Re, Im, short_N//2)
-    # c = [0.5, 4]
-    # window = rw(c, n, N)
-    # modified_audio = Model.multModel(audio_data, window)
-    # InOut.writeWAV('./modified_voice.wav', modified_audio, rate)
 
     plt.subplot(2, 2, 1)
     plt.ylim(-8200, 6000)
@@ -109,66 +105,90 @@ def test_filters_methods():
     global fig
 
     def __lpf():
+        print('Фильтрация lpf...')
+        print('Вычисление частотной харакетристики фильтра lpf...')
         lpf, lpf2 = Processing.lpf(fc_lpf, m_lpf, dt)
         tf_lpf = Analysis.transferFunction(lpf2)
         deltaF_lpf = 2 * f_bound / (2 * m_lpf)
 
-        filtered_data = Model.convolModel(lpf2, short_audio_data, N)
-        Re, Im = Analysis.fourier(filtered_data, len(filtered_data))
-        specter = Analysis.spectrFourier(Re, Im, len(filtered_data)//2)
+        print('Вычисление спектра отфильтрованных данных...')
+        filtered_data = Model.convolModel(lpf2, short_audio_data, short_N)
+        Re, Im = Analysis.fourier(filtered_data, short_N)
+        specter = Analysis.spectrFourier(Re, Im, short_N//2)
+
+        filtered_wav_path = filtered_wavs + f'/Рама_{i+1}_слог_lpf.wav'
+        print(f'Запись фильтрованных данных в файл {filtered_wav_path}')
+        InOut.writeWAV(filtered_wav_path, filtered_data, rate)
 
         plt.subplot(1, 3, 1)
-        make_line_plot('Частотная характеристика фильтра lpf', np.arange(0, f_bound, deltaF_lpf),
+        make_line_plot(f'Частотная характеристика фильтра lpf {i+1} слога', np.arange(0, f_bound, deltaF_lpf),
                        tf_lpf, 'Freq [Hz]', 'Amplitude')
         plt.subplot(1, 3, 2)
-        make_line_plot('Данные после фильтра lpf', np.arange(N) * dt,
-                       filtered_data, 'Time [index]', 'Amplitude')
+        make_line_plot(f'Данные после фильтра lpf {i+1} слога', np.arange(short_N) * dt,
+                       filtered_data, 'Time [sec]', 'Amplitude')
         plt.subplot(1, 3, 3)
-        make_line_plot('Спектр данных после фильтра lpf', np.arange(0, f_bound, deltaF),
+        plt.ylim(-10, 80)
+        make_line_plot(f'Спектр данных после фильтра lpf {i+1} слога', np.arange(0, f_bound, deltaF),
                        specter, 'Freq [Hz]', '|X_n|')
 
     def __hpf():
+        print("Фильтрация hpf...")
+        print('Вычисление частотной харакетристики фильтра hpf...')
         hpf = Processing.hpf(fc_hpf, m_hpf, dt)
         tf_hpf = Analysis.transferFunction(hpf)
         deltaF_hpf = 2 * f_bound / (2 * m_hpf)
 
-        filtered_data = Model.convolModel(hpf, short_audio_data, N)
-        Re, Im = Analysis.fourier(filtered_data, N)
-        specter = Analysis.spectrFourier(Re, Im, N//2)
+        print('Вычисление спектра отфильтрованных данных...')
+        filtered_data = Model.convolModel(hpf, short_audio_data, short_N)
+        Re, Im = Analysis.fourier(filtered_data, short_N)
+        specter = Analysis.spectrFourier(Re, Im, short_N//2)
+
+        filtered_wav_path = filtered_wavs + f'/Рама_{i+1}_слог_hpf.wav'
+        print(f'Запись фильтрованных данных в файл {filtered_wav_path}')
+        InOut.writeWAV(filtered_wav_path, filtered_data, rate)
 
         plt.subplot(1, 3, 1)
         make_line_plot('Частотная характеристика фильтра hpf', np.arange(0, f_bound, deltaF_hpf),
                        tf_hpf, 'Freq [Hz]', 'Amplitude')
         plt.subplot(1, 3, 2)
-        plt.ylim(-120, 120)
-        make_line_plot('Данные после фильтра hpf', np.arange(N) * dt,
-                       filtered_data, 'Time [index]', 'Amplitude')
+        make_line_plot('Данные после фильтра hpf', np.arange(short_N) * dt,
+                       filtered_data, 'Time [sec]', 'Amplitude')
         plt.subplot(1, 3, 3)
-        plt.ylim(0, 40)
+        plt.ylim(-10, 80)
         make_line_plot('Спектр данных после фильтра hpf', np.arange(0, f_bound, deltaF),
                        specter, 'Freq [Hz]', '|X_n|')
 
     def __bpf():
+        print("Фильтрация bpf...")
+        print('Вычисление частотной харакетристики фильтра bpf...')
         bpf = Processing.bpf(fc1_bpf, fc2_bpf, m_bpf, dt)
         tf_bpf = Analysis.transferFunction(bpf)
         deltaF_bpf = 2 * f_bound / (2 * m_bpf)
 
-        filtered_data = Model.convolModel(bpf, short_audio_data, N)
-        Re, Im = Analysis.fourier(filtered_data, N)
-        specter = Analysis.spectrFourier(Re, Im, N//2)
+        print('Вычисление спектра отфильтрованных данных...')
+        filtered_data = Model.convolModel(bpf, short_audio_data, short_N)
+        Re, Im = Analysis.fourier(filtered_data, short_N)
+        specter = Analysis.spectrFourier(Re, Im, short_N//2)
+
+        filtered_wav_path = filtered_wavs + f'/Рама_{i+1}_слог_bpf.wav'
+        print(f'Запись фильтрованных данных в файл {filtered_wav_path}')
+        InOut.writeWAV(filtered_wav_path, filtered_data, rate)
 
         plt.subplot(1, 3, 1)
         make_line_plot('Частотная характеристика фильтра bpf', np.arange(0, f_bound, deltaF_bpf),
                        tf_bpf, 'Freq [Hz]', 'Amplitude')
         plt.subplot(1, 3, 2)
-        plt.ylim(-120, 120)
-        make_line_plot('Данные после фильтра bpf', np.arange(N) * dt,
-                       filtered_data, 'Time [index]', 'Amplitude')
+        make_line_plot('Данные после фильтра bpf', np.arange(short_N) * dt,
+                       filtered_data, 'Time [sec]', 'Amplitude')
         plt.subplot(1, 3, 3)
-        plt.ylim(0, 40)
+        plt.ylim(-10, 80)
         make_line_plot('Спектр данных после фильтра bpf', np.arange(0, f_bound, deltaF),
                        specter, 'Freq [Hz]', '|X_n|')
 
+
+    filtered_wavs = './filtered_wavs'
+    if not os.path.exists(filtered_wavs):
+        os.makedirs(filtered_wavs)
 
     filename = './recorded_voice.wav'
     audio_data, rate, N = InOut.readWAV(filename)
@@ -179,23 +199,24 @@ def test_filters_methods():
     dt = 1 / rate
     f_bound = 1/(2*dt)
 
-    short_audio_data = audio_data[n[0]:n[1]]
-    short_N = len(short_audio_data)
-    print(f"Длина сигнала первого слога: {short_N}")
-
-    deltaF = (1/dt)/short_N
-
-    fc_lpf, fc_hpf, fc1_bpf, fc2_bpf = 15, 200, 15, 200
-    m_lpf, m_hpf, m_bpf = 64, 64, 64
+    fc = [[300, 2000, 300, 2000], [300, 2000, 300, 2000]]
+    m = [[64, 64, 64], [64, 64, 64]]
     inner_funcs = [__lpf, __hpf, __bpf]
-    for i in range(len(inner_funcs)):
-        inner_funcs[i]()
-        if i != len(inner_funcs) - 1:
-            plt.tight_layout()
-            fig.savefig(f"./plots/{title}_{i+1}.png")
-            current_title = fig._suptitle.get_text()
-            fig = plt.figure(figsize=(14, 8))
-            fig.suptitle(current_title)
+    for i in range(len(n) // 2):
+        short_audio_data = audio_data[n[i*2]:n[i*2+1]]
+        short_N = len(short_audio_data)
+        deltaF = (1/dt)/short_N
+        print(f"Длина сигнала {i+1} слога: {short_N}")
+        fc_lpf, fc_hpf, fc1_bpf, fc2_bpf = fc[i]
+        m_lpf, m_hpf, m_bpf = m[i]
+        for j in range(len(inner_funcs)):
+            inner_funcs[j]()
+            if (i+1) * (j+1) != len(inner_funcs) * (len(n) // 2):
+                plt.tight_layout()
+                fig.savefig(f"./plots/{title}_syll_{i+1}_N_{j+1}.png")
+                current_title = fig._suptitle.get_text()
+                fig = plt.figure(figsize=(14, 8))
+                fig.suptitle(current_title)
 
 
 if __name__ == '__main__':
