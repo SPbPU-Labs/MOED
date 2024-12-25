@@ -34,7 +34,7 @@ def test_record_audio():
     audio_data, rate, N = InOut.record_audio(filename)
     print("Запись завершена.")
     make_line_plot('Записанный голос', np.arange(len(audio_data)) / rate,
-                   audio_data, 'Counts', 'Amplitude')
+                   audio_data, 'Time [sec]', 'Amplitude')
 
 def test_change_accent():
     filename = './recorded_voice.wav'
@@ -42,8 +42,8 @@ def test_change_accent():
     duration = N / rate
     print(f"Частота дискретизации: {rate} Гц, Длина сигнала: {N} отсчётов, Длительность: {duration:.2f} сек")
 
-    n = [int(rate*0.37), int(rate*0.55), int(rate*0.6), int(rate*0.8)]
-    c = [0.5, 4]
+    n = [int(rate*0.37), int(rate*0.55), int(rate*0.6), int(rate*1)]
+    c = [0.5, 5]
     window = rw(c, n, N)
     modified_audio = Model.multModel(audio_data, window)
     InOut.writeWAV('./modified_voice.wav', modified_audio, rate)
