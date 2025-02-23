@@ -118,7 +118,6 @@ class Processing:
         """
         return np.clip(data2D + C, 0, 255)
 
-
     @staticmethod
     def mult2D(data2D, C):
         """
@@ -130,6 +129,61 @@ class Processing:
         """
         return np.clip(data2D * C, 0, 255)
 
+    @staticmethod
+    def nearest_neighbor_resize(image, scale):
+        """
+        Масштабирование изображения методом ближайшего соседа.
+
+        :param image : np.ndarray: Исходное изображение.
+        :param scale : float: Коэффициент масштабирования.
+
+        :return np.ndarray: Масштабированное изображение.
+        """
+        M, N = image.shape[:2]  # Размеры оригинала
+        new_M, new_N = int(M * scale), int(N * scale)  # Новые размеры
+
+        # Массив с размером (new_M, new_N, 2) для grayscale или 3 для RGB
+        resized_image = np.zeros((new_M, new_N, *image.shape[2:]), dtype=image.dtype)
+
+        for i in range(new_M):
+            for j in range(new_N):
+                src_x = min(int(i / scale), M - 1)
+                src_y = min(int(j / scale), N - 1)
+                resized_image[i, j] = image[src_x, src_y]
+
+        return resized_image
+
+    @staticmethod
+    def bilinear_resize(image, scale):
+        """
+        Масштабирование изображения методом билинейной интерполяции.
+
+        :param image : np.ndarray: Исходное изображение.
+        :param scale : float: Коэффициент масштабирования.
+
+        :return np.ndarray: Масштабированное изображение.
+        """
+        M, N = image.shape[:2]
+        new_M, new_N = int(M * scale), int(N * scale)
+        resized_image = np.zeros((new_M, new_N, *image.shape[2:]), dtype=image.dtype)
+
+        for i in range(new_M):
+            for j in range(new_N):
+                x = i / scale
+                y = j / scale
+
+                x0, x1 = int(x), min(int(x) + 1, M - 1)
+                y0, y1 = int(y), min(int(y) + 1, N - 1)
+
+                a = x - x0
+                b = y - y0
+
+                resized_image[i, j] = (1 - a) * (1 - b) * image[x0, y0] + \
+                                      (1 - a) * b * image[x0, y1] + \
+                                      a * (1 - b) * image[x1, y0] + \
+                                      a * b * image[x1, y1]
+
+        return resized_image.astype(image.dtype)
 
 
 class Modulator(ABC):

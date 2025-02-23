@@ -52,24 +52,22 @@ class InOut:
         return normalized_image.astype(np.uint8)
 
     @staticmethod
-    def readXCR(filename):
+    def readXCR(filename, size=(1024, 1024)):
         """
         Чтение изображения с расширением файла .xcr.
 
-        :param
-        filename : str
-            Путь к файлу.
+        :param filename : str Путь к файлу.
+        :param size : tuple Размер изображения (M, N).
 
-        :returns
-        tuple : (image, header)
+        :returns tuple : (image, header)
             Изображение (1024x1024) и заголовок (2048 байт).
         """
         with open(filename, "rb") as f:
             header = f.read(2048)
-            raw_data = np.fromfile(f, dtype=np.uint16, count=1024 * 1024)
+            raw_data = np.fromfile(f, dtype=np.uint16, count=size[0] * size[1])
 
         # Перестановка байтов (Big-endian → Little-endian)
-        image = np.frombuffer(raw_data.byteswap(), dtype=np.uint16).reshape(1024, 1024)
+        image = np.frombuffer(raw_data.byteswap(), dtype=np.uint16).reshape(size[1], size[0])
         return image, header
 
     @staticmethod
