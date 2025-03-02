@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from scipy.signal import hilbert
 import numpy as np
 
+from common.in_out import InOut
+
 
 class Processing:
     @staticmethod
@@ -184,6 +186,46 @@ class Processing:
                                       a * b * image[x1, y1]
 
         return resized_image.astype(image.dtype)
+
+    @staticmethod
+    def negative(image):
+        """
+        Преобразование изображения в негатив.
+
+        :param image : np.ndarray: Исходное изображение.
+
+        :return np.ndarray: Изображение в негативе.
+        """
+        L = np.max(image)
+        return L - image
+
+    @staticmethod
+    def gamma_transform(image, C, gamma):
+        """
+        Гамма-преобразование изображения.
+        s = C * r^γ
+
+        :param image : np.ndarray: Исходное изображение.
+        :param C : float: Коэффициент масштаба.
+        :param gamma : float: Показатель степени.
+
+        :return np.ndarray: Преобразованное изображение.
+        """
+        return np.array(C * (image / 255) ** gamma, dtype='uint8')
+
+    @staticmethod
+    def log_transform(image, C):
+        """
+        Логарифмическое преобразование изображения.
+        s = C * lg(r+1)
+
+        :param image : np.ndarray: Исходное изображение.
+        :param C : float: Коэффициент масштаба.
+
+        :return np.ndarray: Преобразованное изображение.
+        """
+
+        return np.array(C * np.log1p(image), dtype='uint8')
 
 
 class Modulator(ABC):
