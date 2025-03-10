@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
-from scipy.signal import hilbert
 import numpy as np
+from scipy.signal import hilbert
 
-from common.in_out import InOut
+from common.analysis import Analysis
 
 
 class Processing:
@@ -226,6 +226,37 @@ class Processing:
         """
 
         return np.array(C * np.log1p(image), dtype='uint8')
+
+    @staticmethod
+    def gradation_transform(image: np.ndarray) -> np.ndarray:
+        """
+        Градационное преобразование изображения
+
+        Эквализация гистограммы для изображения по формуле:
+            p(r_k) = n_k / (M * N)
+
+        Функция распределения (CDF):
+            C(r) = sum_{i=0}^{r} p(i)
+
+        Пересчёт яркости по формуле:
+            s = T(r) = L * C(r)
+        где L — максимальное значение яркости исходного изображения.
+
+        :param image : np.ndarray: Исходное изображение в оттенках серого размером MxN.
+
+        :return np.ndarray: Изображение после эквализации гистограммы.
+        """
+        M, N = image.shape
+        L = 255
+        hist, bins = np.histogram(image.flatten(), bins=L+1, range=[0, L+1])
+        total_pixels = M * N
+        p = hist / total_pixels  # нормализованная гистограмма p(r_k)
+
+        cdf = np.cumsum(p)  # накопленная функцию распределения (CDF)
+
+        equalization_map = np.floor(L * cdf).astype(np.uint8)  # отображающая функиця s
+        equalized_image = equalization_map[image]
+        return equalized_image
 
 
 class Modulator(ABC):

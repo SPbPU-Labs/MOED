@@ -1,8 +1,7 @@
-import numpy as np
 from enum import Enum
 
-from src.model import Model
-from src.processing import Processing
+import numpy as np
+from common.in_out import InOut
 
 
 class ACFType(Enum):
@@ -228,3 +227,40 @@ class Analysis:
         Re, Im = Analysis.fourier(data, N)
         spectrum = Analysis.spectrFourier(Re, Im, N//2)
         return spectrum * (2*m+1)
+
+    @staticmethod
+    def compare_images(original: np.ndarray, scaled: np.ndarray) -> np.ndarray:
+        """
+        Сравнение исходного изображения и масштабированного изображения по следующей схеме:
+
+            a) Изменение размера обработанного (масштабированного) изображения до размеров исходного,
+               получая h(x,y).
+            b) Вычисление разностного изображения: d(x,y) = f(x,y) - h(x,y), где f(x,y) — исходное изображение.
+            c) Применение градационного преобразования (min-max нормализация) к d(x,y) для улучшения контрастности.
+
+        :param original : np.ndarray: Исходное изображение f(x,y) размером (M, N).
+        :param scaled : np.ndarray: Масштабированное изображение g(x,y) с отличными размерами.
+
+        :return np.ndarray: Разностное изображение d(x,y), нормализованное в диапазоне [0, 255].
+        """
+        orig_M, orig_N = original.shape
+        scaled_M, scaled_N = scaled.shape
+
+        # Коэффициенты масштабирования для перехода от размеров scaled к размерам original
+        scale_M = orig_M / scaled_M
+        scale_N = orig_N / scaled_N
+
+        # Изменение размеров scaled до размеров original
+        h = np.zeros((orig_M, orig_N), dtype=scaled.dtype)
+        for i in range(orig_M):
+            for j in range(orig_N):
+                src_i = min(int(i / scale_M), scaled_M - 1)
+                src_j = min(int(j / scale_N), scaled_N - 1)
+                h[i, j] = scaled[src_i, src_j]
+
+        # Разностное изображение: d(x,y) = f(x,y) - h(x,y)
+        d = original.astype(np.int16) - h.astype(np.int16)
+
+        # Нормализация разностного изображения под оттенки серого
+        d_normalized = InOut.to_grayscale(d)
+        return d_normalized
