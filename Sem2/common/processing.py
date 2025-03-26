@@ -2,8 +2,9 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from scipy.signal import hilbert
-
-from common.analysis import Analysis
+from scipy.fftpack import fft
+from scipy.signal import correlate
+import matplotlib.pyplot as plt
 
 
 class Processing:
@@ -257,6 +258,192 @@ class Processing:
         equalization_map = np.floor(L * cdf).astype(np.uint8)  # отображающая функиця s
         equalized_image = equalization_map[image]
         return equalized_image
+
+    @staticmethod
+    def detect_artifacts(image: np.ndarray, dy: int = 50, show_plots: bool = True) -> float:
+        """
+        Анализ изображения для обнаружения артефактов.
+
+        1. Вычисление амплитудных спектров:
+            - Исходной строки.
+            - Производной строки.
+            - Автокорреляционной функции (АКФ) производной строки.
+            - Взаимной корреляции (ВКФ) между производными двух строк.
+        2. Вычисление спектров взаимной корреляции (ВКФ) между производными двух строк.
+        3. Поиск доминирующих максимумов спектров АКФ и ВКФ в диапазоне частот [0.25 – 0.5].
+        4. Вычисление средней частоты совпадающих масимумов f0.
+
+        Args:
+            image (np.ndarray): двумерное рентгеновское изображение.
+            dy (int): шаг по вертикали.
+            show_plots (bool): флаг отображения графиков спектров.
+
+        Returns:
+            float: Средняя частота доминирующего максимума f0.
+        """
+        def __compute_spectrum(signal: np.ndarray) -> np.ndarray:
+            """
+            Амплитудный спектр Фурье сигнала.
+
+            Args:
+                signal (np.ndarray): одномерный массив данных (строка изображения).
+
+            Returns:
+                np.ndarray: амплитудный спектр.
+            """
+            N = len(signal)
+            spectrum = np.abs(fft(signal)) / N
+            return spectrum[:N // 2]  # Возвращаем только положительные частоты
+
+        def __compute_autocorrelation(signal: np.ndarray) -> np.ndarray:
+            """
+            АКФ (автокорреляционная функция) для строки изображения.
+
+            Args:
+                signal (np.ndarray): одномерный массив данных.
+
+            Returns:
+                 np.ndarray: автокорреляционная функция.
+            """
+            return correlate(signal, signal, mode='full')[len(signal)-1:]
+
+        def __compute_crosscorrelation(signal1: np.ndarray, signal2: np.ndarray) -> np.ndarray:
+            """
+            ВКФ (взаимная корреляция) двух строк изображения.
+
+            Args:
+                signal1 (np.ndarray): первая строка изображения.
+                signal2 (np.ndarray): вторая строка изображения.
+
+            Returns:
+                np.ndarray: взаимная корреляция.
+            """
+            return correlate(signal1, signal2, mode='full')[len(signal1)-1:]
+
+        height, width = image.shape
+        matched_freqs = []
+
+        for y in range(0, height - dy, dy):
+            row1 = image[y, :]
+            row2 = image[y + dy, :]
+            row1_derivative = np.gradient(row1)
+            row2_derivative = np.gradient(row2)
+
+            # Вычисление спектров
+            spectrum_row1 = __compute_spectrum(row1)
+            spectrum_deriv = __compute_spectrum(row1_derivative)
+            spectrum_acf = __compute_spectrum(__compute_autocorrelation(row1_derivative))
+            spectrum_vcf = __compute_spectrum(__compute_crosscorrelation(row1_derivative, row2_derivative))
+
+            # Построение графиков спектров
+            if show_plots and y == 0:
+                plt.figure(figsize=(12, 6))
+
+                plt.subplot(2, 2, 1)
+                plt.plot(spectrum_row1)
+                plt.title(f"Спектр строки {y}")
+                plt.xlabel("Частота")
+                plt.ylabel("Амплитуда")
+
+                plt.subplot(2, 2, 2)
+                plt.plot(spectrum_deriv, color="red")
+                plt.title(f"Спектр производной строки {y}")
+                plt.xlabel("Частота")
+                plt.ylabel("Амплитуда")
+
+                plt.subplot(2, 2, 3)
+                plt.plot(spectrum_acf, color="green")
+                plt.title(f"Спектр АКФ производной строки {y}")
+                plt.xlabel("Частота")
+                plt.ylabel("Амплитуда")
+
+                plt.subplot(2, 2, 4)
+                plt.plot(spectrum_vcf, color="purple")
+                plt.title(f"Спектр ВКФ между строками {y} и {y+dy}")
+                plt.xlabel("Частота")
+                plt.ylabel("Амплитуда")
+
+                plt.tight_layout()
+                plt.show()
+
+            # Создаём частотную шкалу
+            freqs = np.linspace(0, 0.5, len(spectrum_acf))
+
+            # Ищем пики в АКФ в диапазоне [0.25; 0.5]
+            peak_acf_indices = np.where((freqs >= 0.25) & (freqs <= 0.5))[0]
+            peak_acf_freq = freqs[peak_acf_indices[np.argmax(spectrum_acf[peak_acf_indices])]]
+
+            # Ищем пики в ВКФ в диапазоне [0.25; 0.5]
+            peak_vcf_indices = np.where((freqs >= 0.25) & (freqs <= 0.5))[0]
+            peak_vcf_freq = freqs[peak_vcf_indices[np.argmax(spectrum_vcf[peak_vcf_indices])]]
+
+            # Проверяем совпадение пиков
+            if abs(peak_acf_freq - peak_vcf_freq) < 0.02:  # Допускаем небольшую разницу
+                matched_freqs.append((peak_acf_freq + peak_vcf_freq) / 2)  # Среднее по двум спектрам
+
+        # Возвращаем среднее арифметическое найденных частот
+        return np.mean(matched_freqs) if matched_freqs else 0.0
+
+    @staticmethod
+    def suppress_artifacts(image: np.ndarray, f0: float, show_plots: bool = True) -> np.ndarray:
+        """
+        Подавление артефактов на рентгеновском изображении с помощью режекторного фильтра.
+
+        Args:
+            image (np.ndarray): Исходное изображение.
+            f0 (float): Частота артефакта.
+            show_plots (bool): отображение графика АЧХ фильтра
+
+        Returns:
+            np.ndarray: Обработанное изображение.
+        """
+        def __potter_filter(signal: np.ndarray, f0: float, m: int = 32) -> np.ndarray:
+            """
+            Режекторный фильтр Поттера.
+
+            Args:
+                signal : np.ndarray: входной сигнал (строка изображения).
+                f0 : float: частота артефакта.
+                m : int: размерность фильтра.
+
+            Returns:
+                np.ndarray: Отфильтрованный сигнал.
+            """
+            dt = 1  # Шаг дискретизации
+            fc1, fc2 = f0 - 0.05, f0 + 0.05  # Полоса заграждения
+
+            # Формируем фильтр
+            lpw = np.sinc(2 * fc1 * (np.arange(-m, m + 1) * dt)) - np.sinc(2 * fc2 * (np.arange(-m, m + 1) * dt))
+            lpw /= np.sum(lpw)  # Нормализация
+
+            if show_plots:
+                spectrum = np.abs(np.fft.fft(lpw, 512))
+                freqs = np.linspace(0, 0.5, len(spectrum) // 2)
+
+                plt.figure(figsize=(8, 4))
+                plt.plot(freqs, spectrum[:len(freqs)])
+                plt.title(f"АЧХ режекторного фильтра (f0 = {f0:.3f})")
+                plt.xlabel("Частота")
+                plt.ylabel("Амплитуда")
+                plt.grid()
+                plt.show()
+
+            # Применяем свёртку
+            return np.convolve(signal, lpw, mode='same')
+
+        height, width = image.shape
+        filtered_image = np.copy(image)
+
+        # Фильтрация по строкам
+        for y in range(height):
+            filtered_image[y, :] = __potter_filter(image[y, :], f0)
+            show_plots = False
+
+        # Фильтрация по столбцам
+        for x in range(width):
+            filtered_image[:, x] = __potter_filter(filtered_image[:, x], f0)
+
+        return filtered_image
 
 
 class Modulator(ABC):
