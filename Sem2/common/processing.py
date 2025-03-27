@@ -4,6 +4,7 @@ import numpy as np
 from scipy.signal import hilbert
 from scipy.fftpack import fft
 from scipy.signal import correlate
+from scipy.ndimage import convolve, median_filter
 import matplotlib.pyplot as plt
 
 
@@ -445,6 +446,34 @@ class Processing:
 
         return filtered_image
 
+    @staticmethod
+    def mean_filter(image: np.ndarray, kernel_size: int) -> np.ndarray:
+        """
+        Усредняющий фильтр для изображения.
+
+        Args:
+            image (np.ndarray): исходное изображение.
+            kernel_size (int): маска фильтра
+
+        Returns:
+            np.ndarray: обработанное изображение.
+        """
+        kernel = np.ones((kernel_size, kernel_size)) / (kernel_size ** 2)
+        return convolve(image, kernel, mode='reflect')
+
+    @staticmethod
+    def median_filtering(image: np.ndarray, kernel_size: int) -> np.ndarray:
+        """
+        Медианный фильтр для изображения.
+
+        Args:
+            image (np.ndarray): исходное изображение.
+            kernel_size (int): маска фильтра
+
+        Returns:
+            np.ndarray: обработанное изображение.
+        """
+        return median_filter(image, size=kernel_size, mode='reflect')
 
 class Modulator(ABC):
     @abstractmethod

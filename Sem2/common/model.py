@@ -1,10 +1,28 @@
 import hashlib
 import time
+from enum import Enum
 from typing import Callable
 import numpy as np
 
 
+class ImageNoiseLevel(Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
 class Model:
+    image_random_noise_levels = {
+        ImageNoiseLevel.LOW: 10,
+        ImageNoiseLevel.MEDIUM: 30,
+        ImageNoiseLevel.HIGH: 60
+    }
+
+    image_impulse_noise_params = {
+        ImageNoiseLevel.LOW: (10, 10, 10),
+        ImageNoiseLevel.MEDIUM: (20, 30, 20),
+        ImageNoiseLevel.HIGH: (30, 60, 30),
+    }
+
     @staticmethod
     def trend(func: Callable[[np.ndarray, float, float], np.ndarray], a: float, b: float, delta: float,
               N: int) -> np.ndarray:
@@ -209,6 +227,72 @@ class Model:
         noise = np.random.normal(0, 1, len(y))
         y = Model.addModel(y, noise)
         return h, x, y
+
+    @staticmethod
+    def image_random_noise(image: np.ndarray, level: ImageNoiseLevel) -> np.ndarray:
+        """
+        Случайный шум изображения с нормальным распределением.
+
+        Args:
+            image (np.ndarray): исходное изображение.
+            level (ImageNoiseLevel): уровень шума: low, medium, high.
+
+        Returns:
+            np.ndarray: зашумлённое изображение.
+        """
+        R = Model.image_random_noise_levels.get(level, 30)
+        noisy_image = image.copy()
+
+        for i in range(noisy_image.shape[0]):
+            row_noise = Model.noise(len(noisy_image[i]), R)
+            noisy_image[i] = np.clip(noisy_image[i] + row_noise, 0, 255)
+
+        return noisy_image.astype(np.uint8)
+
+    @staticmethod
+    def image_impulse_noise(image: np.ndarray, level: ImageNoiseLevel) -> np.ndarray:
+        """
+        Импульсный шум изображения (соль и перец).
+
+        Args:
+            image (np.ndarray): исходное изображение.
+            level (ImageNoiseLevel): уровень шума: low, medium, high.
+
+        Returns:
+            np.ndarray: зашумлённое изображение.
+        """
+        M, R, Rs = Model.image_impulse_noise_params.get(level, (10, 0.3, 20))
+        noisy_image = image.copy()
+
+        for i in range(noisy_image.shape[0]):
+            spike_noise = Model.spikes(len(noisy_image[i]), M, R, Rs)
+            noisy_image[i] = np.clip(noisy_image[i] + spike_noise, 0, 255)
+
+        return noisy_image.astype(np.uint8)
+
+    @staticmethod
+    def image_mixed_noise(image: np.ndarray, random_level: ImageNoiseLevel, impulse_level: ImageNoiseLevel) -> np.ndarray:
+        """
+        Смесь случайного и импульсного шума изображения.
+
+        Args:
+            image (np.ndarray): исходное изображение.
+            random_level (ImageNoiseLevel): уровень случайного шума: low, medium, high.
+            impulse_level (ImageNoiseLevel): уровень импульсного шума: low, medium, high.
+
+        Returns:
+            np.ndarray: зашумлённое изображение.
+        """
+        R_rand = Model.image_random_noise_levels.get(random_level, 30)
+        M, R, Rs = Model.image_impulse_noise_params.get(impulse_level, (10, 0.3, 20))
+        noisy_image = image.copy()
+
+        for i in range(noisy_image.shape[0]):
+            row_noise = Model.noise(len(noisy_image[i]), R_rand)
+            spike_noise = Model.spikes(len(noisy_image[i]), M, R, Rs)
+            noisy_image[i] = np.clip(noisy_image[i] + row_noise + spike_noise, 0, 255)
+
+        return noisy_image.astype(np.uint8)
 
 
 class TrendFuncs:
