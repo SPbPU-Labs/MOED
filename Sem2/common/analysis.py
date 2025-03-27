@@ -146,6 +146,28 @@ class Analysis:
         return np.sqrt(Re[:N_half]**2 + Im[:N_half]**2)
 
     @staticmethod
+    def inverseFourier(data: np.ndarray, N: int) -> np.ndarray:
+        """
+        Обратное преобразование Фурье.
+
+        Args:
+            data (np.ndarray): спектр Фурье
+            N (int): размер массива спектра Фурье
+        Returns:
+             np.ndarray: восстановленный сигнал
+        """
+        Re = np.zeros(N)
+        Im = np.zeros(N)
+        for n in range(N):
+            for k in range(N):
+                angle = 2 * np.pi * n * k / N
+                Re[n] += data[k] * np.cos(angle)
+                Im[n] += data[k] * np.sin(angle)
+            if n > 0 and n % int(N*0.1) == 0:
+                print(f'{n / N * 100:.2f}%')
+        return Re + Im
+
+    @staticmethod
     def statistics(data, N, stat_type=StatType.ALL):
         """
         Вычисление статистических характеристик данных.
@@ -264,3 +286,29 @@ class Analysis:
         # Нормализация разностного изображения под оттенки серого
         d_normalized = InOut.to_grayscale(d)
         return d_normalized
+
+    @staticmethod
+    def fourier2D(image: np.ndarray) -> np.ndarray:
+        """
+        Прямое 2D преобразование Фурье.
+
+        Args:
+            image (np.ndarray): входное изображение (2D массив)
+
+        Returns:
+            np.ndarray: спектр Фурье
+        """
+        return np.fft.fft2(image)
+
+    @staticmethod
+    def inverseFourier2D(spectrum: np.ndarray) -> np.ndarray:
+        """
+        Обратное 2D преобразование Фурье.
+
+        Args:
+            spectrum (np.ndarray): спектр Фурье
+
+        Returns:
+            np.ndarray: восстановленное изображение
+        """
+        return np.fft.ifft2(spectrum).real
