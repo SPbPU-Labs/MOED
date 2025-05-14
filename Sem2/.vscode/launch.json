@@ -10,9 +10,9 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceRoot}",
             "env": {
-              "PYTHONPATH": "${workspaceFolder}"
+              "PYTHONPATH": "${workspaceRoot}"
             }
           }
     ]
