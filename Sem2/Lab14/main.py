@@ -12,7 +12,7 @@ def process_image(filename: str, MRIImageOptimizer=EqualizationOptimizer):
 
     equilized, adjusted = MRIImageOptimizer.optimize(image)
 
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(12, 5))
     plt.suptitle(f"MRI optimizer: {MRIImageOptimizer.__name__}")
 
     plt.subplot(1, 3, 1)
@@ -28,6 +28,7 @@ def process_image(filename: str, MRIImageOptimizer=EqualizationOptimizer):
     plt.title(f"Step 2: {file}")
 
     plt.tight_layout()
+    plt.savefig(f"./Lab14/images/{MRIImageOptimizer.__name__}_{file[:-4]}.png")
     plt.show()
 
     return adjusted
@@ -53,4 +54,3 @@ if __name__ == "__main__":
             print(f"Processing {file}...")
             filePath = f"./common/images/{file}"
             adjusted_image = process_image(filePath, optimizer)
-            adjusted_image.tofile("./Lab14/images/" + optimizer.__name__ + "_" + file)
